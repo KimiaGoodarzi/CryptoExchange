@@ -8,4 +8,5 @@ import java.util.Optional;
 @Repository
 public interface PriceRepository extends JpaRepository<Price, Long> {
     Optional<Price> findBySymbol(String symbol);
+
 }
