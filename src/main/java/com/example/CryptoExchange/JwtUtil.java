@@ -15,12 +15,14 @@ public class JwtUtil {
 
 
     public String generateToken(String username){
-
-        return Jwts.builder().setSubject(username)
+        String token = Jwts.builder()
+                .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
+        System.out.println("Generated JWT: " + token); // Debugging line
+        return token;
     }
 
     public String extractUsername(String token) {
