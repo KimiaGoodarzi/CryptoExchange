@@ -1,11 +1,9 @@
 package com.example.CryptoExchange;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
@@ -17,13 +15,12 @@ public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    public UserController(UserService userService, JwtUtil jwtUtil, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    public UserController(UserService userService, JwtUtil jwtUtil, UserRepository userRepository) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+
     }
 
     @PostMapping("/register")
@@ -41,6 +38,26 @@ public class UserController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getUser(@RequestHeader("Authorization") String token) {
+        try {
+            String username = jwtUtil.extractUsername(token.replace("Bearer ", ""));
+            Optional<User> userOptional = userRepository.findByUsername(username);
+
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                return ResponseEntity.ok(Map.of(
+                        "username", user.getUsername(),
+                        "email", user.getEmail(),
+                        "createdAt", user.getCreatedAt()
+                ));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+        return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
     }
 
     @PostMapping("/login")
@@ -66,3 +83,6 @@ public class UserController {
         return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
     }
 }
+//Username: testuser
+//Email: testuser@example.com
+//Password: password123

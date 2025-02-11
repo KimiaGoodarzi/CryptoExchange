@@ -15,7 +15,7 @@ public class SecurityConfig {
     @Bean //a spring-managed component
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())    // turn off CSRF  for webSocket and APIs
+                .csrf(csrf -> csrf.disable()).cors(cors -> cors.disable())    // turn off CSRF  for webSocket and APIs
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/**").permitAll()  //authorize access to all api URLs
                         .requestMatchers("/crypto-updates/**").permitAll() //authorize access to all websocket URLs
